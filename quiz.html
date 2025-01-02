@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الصور</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .answers {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn.disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #timer {
+            font-size: 18px;
+            margin-top: 10px;
+            color: red;
+        }
+        #progress-container {
+            background-color: #ddd;
+            border-radius: 5px;
+            height: 20px;
+            margin: 10px 0;
+        }
+        #progress-bar {
+            background-color: #007bff;
+            height: 100%;
+            width: 0%;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="start-page" class="container">
+        <h1> اصدار ١ النوابِغ </h1>
+        <label for="examiner-name">يرجى إدخال اسمك:</label>
+        <input type="text" id="examiner-name" placeholder="أدخل اسمك هنا">
+        <button class="btn" onclick="startExam()">بدء الاختبار</button>
+    </div>
+
+    <div id="exam-page" class="container" style="display: none;">
+        <header>
+            <div>اسم المختبر: <span id="examiner-display"></span></div>
+        </header>
+        <main>
+            <div id="timer">الوقت المتبقي: 15 ثانية</div>
+            <div id="progress-container">
+                <div id="progress-bar"></div>
+            </div>
+            <img id="question-image" src="" alt="صورة السؤال">
+            <div class="answers">
+                <button class="btn" onclick="selectAnswer('أ')">أ</button>
+                <button class="btn" onclick="selectAnswer('ب')">ب</button>
+                <button class="btn" onclick="selectAnswer('ج')">ج</button>
+                <button class="btn" onclick="selectAnswer('د')">د</button>
+            </div>
+            <div>
+                <button class="btn" id="prev-btn" onclick="prevQuestion()" disabled>السابق</button>
+                <button class="btn" id="next-btn" onclick="nextQuestion()">التالي</button>
+                <button class="btn" onclick="finishExam()">إنهاء الاختبار</button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const questions = [
+          { image: "images/image1.jpeg", correct: "ب" },
+          { image: "images/image2.jpeg", correct: "ب" },
+          { image: "images/image3.jpeg", correct: "أ" },
+          { image: "images/image4.jpeg", correct: "ج" },
+          { image: "images/image5.jpeg", correct: "ب" },
+          { image: "images/image6.jpeg", correct: "د" },
+          { image: "images/image7.jpeg", correct: "ج" },
+          { image: "images/image8.jpeg", correct: "أ" },
+          { image: "images/image9.jpeg", correct: "د" },
+          { image: "images/image10.jpeg", correct: "ب" },
+          { image: "images/image11.jpeg", correct: "ب" },
+          { image: "images/image12.jpeg", correct: "ج" },
+          { image: "images/image13.jpeg", correct: "ب" },
+          { image: "images/image14.jpeg", correct: "أ" },
+          { image: "images/image15.jpeg", correct: "ب" },
+          { image: "images/image16.jpeg", correct: "أ" },
+          { image: "images/image17.jpeg", correct: "ج" },
+          { image: "images/image18.jpeg", correct: "أ" },
+          { image: "images/image19.jpeg", correct: "أ" },
+          { image: "images/image20.jpeg", correct: "أ" },
+          { image: "images/image21.jpeg", correct: "د" },
+          { image: "images/image22.jpeg", correct: "ج" },
+          { image: "images/image23.jpeg", correct: "د" },
+          { image: "images/image24.jpeg", correct: "أ" },
+          { image: "images/image25.jpeg", correct: "ج" },
+          { image: "images/image26.jpeg", correct: "ب" },
+          { image: "images/image27.jpeg", correct: "د" },
+          { image: "images/image28.jpeg", correct: "ب" },
+          { image: "images/image29.jpeg", correct: "أ" },
+          { image: "images/image30.jpeg", correct: "د" },
+          { image: "images/image31.jpeg", correct: "د" },
+          { image: "images/image32.jpeg", correct: "د" },
+          { image: "images/image33.jpeg", correct: "ج" },
+          { image: "images/image34.jpeg", correct: "د" },
+          { image: "images/image35.jpeg", correct: "أ" },
+          { image: "images/image36.jpeg", correct: "أ" },
+          { image: "images/image37.jpeg", correct: "د" },
+          { image: "images/image38.jpeg", correct: "أ" },
+          { image: "images/image39.jpeg", correct: "د" },
+          { image: "images/image40.jpeg", correct: "د" },
+          { image: "images/image41.jpeg", correct: "ج" },
+          { image: "images/image42.jpeg", correct: "ج" },
+          { image: "images/image43.jpeg", correct: "ب" },
+          { image: "images/image44.jpeg", correct: "د" },
+          { image: "images/image45.jpeg", correct: "ب" },
+          { image: "images/image46.jpeg", correct: "د" },
+          { image: "images/image47.jpeg", correct: "ج" },
+          { image: "images/image48.jpeg", correct: "ج" },
+        ];
+
+        let currentQuestionIndex = 0;
+        let userName = "";
+        let userAnswers = [];
+        let timer;
+        const timePerQuestion = 60; // عدد الثواني لكل سؤال
+        let questionStartTime;
+
+        // بدء الاختبار
+        function startExam() {
+            userName = document.getElementById("examiner-name").value;
+            if (!userName) {
+                alert("يرجى إدخال اسمك أولاً!");
+                return;
+            }
+            document.getElementById("examiner-display").textContent = userName;
+            document.getElementById("start-page").style.display = "none";
+            document.getElementById("exam-page").style.display = "block";
+            loadQuestion();
+        }
+
+        // بدء المؤقت
+        function startTimer() {
+            let timeLeft = timePerQuestion;
+            const timerElement = document.getElementById("timer");
+            timerElement.textContent = `الوقت المتبقي: ${timeLeft} ثانية`;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = `الوقت المتبقي: ${timeLeft} ثانية`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert("انتهى الوقت لهذا السؤال!");
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        // تحديث شريط التقدم
+        function updateProgressBar() {
+            const progressBar = document.getElementById("progress-bar");
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // تحميل السؤال الحالي
+        function loadQuestion() {
+            questionStartTime = new Date(); // بدء وقت السؤال
+            const question = questions[currentQuestionIndex];
+            document.getElementById("question-image").src = question.image;
+            document.getElementById("prev-btn").disabled = currentQuestionIndex === 0;
+            document.getElementById("next-btn").disabled = currentQuestionIndex === questions.length - 1;
+
+            clearInterval(timer);
+            startTimer();
+            updateProgressBar();
+        }
+
+        // اختيار الإجابة
+        function selectAnswer(answer) {
+            const questionEndTime = new Date();
+            const timeTaken = (questionEndTime - questionStartTime) / 1000; // الزمن بالثواني
+            console.log(`الوقت المستغرق للسؤال ${currentQuestionIndex + 1}: ${timeTaken} ثانية`);
+            userAnswers[currentQuestionIndex] = answer;
+
+            const correctAnswer = questions[currentQuestionIndex].correct;
+            if (answer === correctAnswer) {
+                alert("إجابة صحيحة!");
+            } else {
+                alert(`إجابة خاطئة! الإجابة الصحيحة هي: ${correctAnswer}`);
+            }
+        }
+
+        // الانتقال للسؤال التالي
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+
+        // الرجوع للسؤال السابق
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        // إنهاء الاختبار وعرض النتائج
+        function finishExam() {
+            clearInterval(timer);
+            let score = 0;
+            let reviewContent = "";
+
+            questions.forEach((question, index) => {
+                const userAnswer = userAnswers[index] || "لم يتم الإجابة";
+                const correctAnswer = question.correct;
+                const isCorrect = userAnswer === correctAnswer;
+
+                if (isCorrect) score++;
+
+                reviewContent += `
+                    <div>
+                        <img src="${question.image}" style="max-width: 100px;" alt="السؤال">
+                        <p>إجابتك: ${userAnswer}</p>
+                        <p>الإجابة الصحيحة: ${correctAnswer}</p>
+                        <p style="color: ${isCorrect ? 'green' : 'red'};">${isCorrect ? "صحيحة" : "خاطئة"}</p>
+                    </div>
+                    <hr>
+                `;
+            });
+
+            document.getElementById("exam-page").style.display = "none";
+            const reviewPage = document.createElement("div");
+            reviewPage.innerHTML = `
+                <h2>نتيجتك: ${score}/${questions.length}</h2>
+                ${reviewContent}
+                <button onclick="location.reload()" class="btn">إعادة الاختبار</button>
+            `;
+            document.body.appendChild(reviewPage);
+        }
+    </script>
+</body>
+</html>
